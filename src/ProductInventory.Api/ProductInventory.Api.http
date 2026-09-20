@@ -1,0 +1,52 @@
+@ProductInventory.Api_HostAddress = http://localhost:5082
+
+### List products (paginated)
+GET {{ProductInventory.Api_HostAddress}}/api/products?page=1&pageSize=20
+Accept: application/json
+
+### Get product by id
+GET {{ProductInventory.Api_HostAddress}}/api/products/100001
+Accept: application/json
+
+### Create product
+POST {{ProductInventory.Api_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Bluetooth Speaker",
+  "description": "Portable speaker with 12h battery",
+  "price": 59.99,
+  "stock": 40
+}
+
+### Update product (rowVersion must come from a prior GET/create response)
+PUT {{ProductInventory.Api_HostAddress}}/api/products/100001
+Content-Type: application/json
+
+{
+  "name": "Wireless Mouse",
+  "description": "2.4GHz wireless mouse with USB receiver",
+  "price": 24.99,
+  "stock": 140,
+  "rowVersion": "REPLACE_WITH_ROWVERSION_FROM_GET_RESPONSE"
+}
+
+### Delete product
+DELETE {{ProductInventory.Api_HostAddress}}/api/products/100001
+
+### Decrement stock
+POST {{ProductInventory.Api_HostAddress}}/api/products/100001/decrement-stock/5
+
+### Add to stock
+POST {{ProductInventory.Api_HostAddress}}/api/products/100001/add-to-stock/10
+
+### Search by name (partial match)
+GET {{ProductInventory.Api_HostAddress}}/api/products/search?name=mouse
+Accept: application/json
+
+### Filter by stock range
+GET {{ProductInventory.Api_HostAddress}}/api/products/stock-level?min=0&max=50
+Accept: application/json
+
+### Health check
+GET {{ProductInventory.Api_HostAddress}}/health

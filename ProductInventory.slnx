@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="NuGet.Config" />
+    <File Path="docker-compose.yml" />
+    <File Path="nginx/nginx.conf" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/ProductInventory.Api/ProductInventory.Api.csproj" />
+    <Project Path="src/ProductInventory.Application/ProductInventory.Application.csproj" />
+    <Project Path="src/ProductInventory.Domain/ProductInventory.Domain.csproj" />
+    <Project Path="src/ProductInventory.Infrastructure/ProductInventory.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ProductInventory.Api.IntegrationTests/ProductInventory.Api.IntegrationTests.csproj" />
+    <Project Path="tests/ProductInventory.Application.UnitTests/ProductInventory.Application.UnitTests.csproj" />
+    <Project Path="tests/ProductInventory.Bdd.Tests/ProductInventory.Bdd.Tests.csproj" />
+  </Folder>
+</Solution>
