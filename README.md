@@ -36,6 +36,19 @@ docker-compose.yml, nginx/nginx.conf         Multi-instance API + SQL Server + l
 
 Dependency direction: `Domain` ← `Application` ← `Infrastructure`/`Api`. Controllers depend only on `IProductService`; nothing in `Application` or `Domain` references EF Core or ASP.NET Core.
 
+## Prerequisites
+
+Everything runs in containers, so a fresh clone only needs:
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine / a Docker-API-compatible Podman setup) — running, with network access to pull `mcr.microsoft.com/mssql/server`, `mcr.microsoft.com/dotnet/*`, and `nginx` images
+- Ports `8080` (nginx) and `1433` (SQL Server) free on the host
+- Git, to clone the repository
+
+No local .NET SDK, SQL Server, or `dotnet-ef` install is required to run the app — the Dockerfile builds it and migrations are applied automatically on container startup. The .NET SDK is only needed if you want to build/run outside Docker or work on the code:
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- `dotnet tool restore` (uses the pinned `dotnet-ef` version in `dotnet-tools.json` — no global install needed)
+
 ## Running locally
 
 ```powershell
@@ -44,7 +57,21 @@ docker compose up --build
 docker compose up --build --scale api=3
 ```
 
-This starts a SQL Server container, one or more API containers (migrations + seed data applied automatically on startup, see [Decisions](#decisions--trade-offs)), and an nginx reverse proxy on `http://localhost:8080`. Swagger UI is available at `/swagger` when `ASPNETCORE_ENVIRONMENT` is `Development`. Logs are written to the console and to `logs/log-.txt` (rolling daily) inside each API container, persisted via the `api-logs` volume.
+This starts a SQL Server container, one or more API containers (migrations + seed data applied automatically on startup, see [Decisions](#decisions--trade-offs)), and an nginx reverse proxy on `http://localhost:8080`. Swagger UI is available at `http://localhost:8080/swagger` (Compose runs the API with `ASPNETCORE_ENVIRONMENT=Development` for local/demo convenience — see [Decisions](#decisions--trade-offs)). Logs are written to the console and to `logs/log-.txt` (rolling daily) inside each API container, persisted via the `api-logs` volume.
+
+### Connecting via SSMS / Azure Data Studio
+
+The SQL Server container publishes port `1433` to the host, so once `docker compose up` is running you can connect with any SQL client using:
+
+| Setting | Value |
+|---|---|
+| Server name | `localhost,1433` |
+| Authentication | SQL Server Authentication |
+| Login | `sa` |
+| Password | `YourStrong!Passw0rd` |
+| Database | `ProductInventory` |
+
+(Credentials are for local development only — see `docker-compose.yml`.)
 
 ## Running the tests
 
@@ -92,6 +119,7 @@ Every response that returns product(s) includes the current `stock` field, per t
 - **Seeding**: sample products are seeded via EF Core migration `HasData` (deterministic, fixed `CreatedAtUtc`/Ids) rather than a runtime seeding routine, keeping the seed data itself under migration/version control.
 - **Migrations on container startup**: the Docker Compose API service applies pending migrations automatically (`ApplyMigrationsOnStartup=true`) for a one-command demo experience. EF Core's migration history table is guarded by a database-level lock, so this is safe even with multiple API replicas starting concurrently — but in a real production pipeline, migrations would typically run as a separate, explicit release step rather than on every app instance's startup.
 - **Load balancing in Compose**: nginx is configured with a `resolver`-based dynamic upstream (not a static `upstream` block) so it re-resolves Docker's embedded DNS and picks up all replicas when scaled with `--scale api=N`.
+- **`ASPNETCORE_ENVIRONMENT=Development` in Compose**: Swagger is intentionally gated behind `IsDevelopment()`, and Compose is the primary way this project is run/demoed, so it sets `Development` to keep Swagger reachable at `http://localhost:8080/swagger`. A real production deployment would instead set `Production` and expose API docs (if at all) through a separate, access-controlled channel.
 
 ## Known limitations
 

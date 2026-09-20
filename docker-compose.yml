@@ -21,7 +21,9 @@ services:
       context: .
       dockerfile: src/ProductInventory.Api/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: "Production"
+      # "Development" here so Swagger UI is reachable for local/demo use; a real prod deploy would use "Production"
+      # and expose docs through a separate, access-controlled channel instead.
+      ASPNETCORE_ENVIRONMENT: "Development"
       ApplyMigrationsOnStartup: "true"
       ConnectionStrings__SqlServer: "Server=sqlserver,1433;Database=ProductInventory;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;"
     depends_on:
