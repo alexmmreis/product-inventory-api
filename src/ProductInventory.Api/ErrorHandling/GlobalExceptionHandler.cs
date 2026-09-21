@@ -16,8 +16,9 @@ public class GlobalExceptionHandler : IExceptionHandler
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         var (statusCode, title) = MapException(exception);
+        var isUnhandled = statusCode == StatusCodes.Status500InternalServerError;
 
-        if (statusCode == StatusCodes.Status500InternalServerError)
+        if (isUnhandled)
         {
             _logger.LogError(exception, "Unhandled exception processing {Method} {Path}", httpContext.Request.Method, httpContext.Request.Path);
         }
@@ -26,7 +27,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             Status = statusCode,
             Title = title,
-            Detail = exception.Message,
+            Detail = isUnhandled ? "An unexpected error occurred. Please try again later." : exception.Message,
             Instance = httpContext.Request.Path,
         };
 
