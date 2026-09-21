@@ -22,6 +22,14 @@ public class UpdateProductRequestValidator : AbstractValidator<UpdateProductRequ
 
         RuleFor(x => x.RowVersion)
             .NotEmpty()
-            .WithMessage("RowVersion is required to detect conflicting concurrent updates.");
+            .WithMessage("RowVersion is required to detect conflicting concurrent updates.")
+            .Must(BeValidBase64)
+            .WithMessage("RowVersion must be a valid base64-encoded value.");
+    }
+
+    private static bool BeValidBase64(string value)
+    {
+        Span<byte> buffer = stackalloc byte[value.Length];
+        return Convert.TryFromBase64String(value, buffer, out _);
     }
 }

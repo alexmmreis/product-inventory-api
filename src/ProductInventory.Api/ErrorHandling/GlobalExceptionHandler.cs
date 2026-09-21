@@ -42,7 +42,6 @@ public class GlobalExceptionHandler : IExceptionHandler
         ProductNotFoundException => (StatusCodes.Status404NotFound, "Product not found"),
         InsufficientStockException => (StatusCodes.Status409Conflict, "Insufficient stock"),
         ProductConcurrencyConflictException => (StatusCodes.Status409Conflict, "Concurrency conflict"),
-        FormatException => (StatusCodes.Status400BadRequest, "Malformed request"),
         _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred"),
     };
 }
