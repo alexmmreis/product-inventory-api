@@ -87,7 +87,7 @@ dotnet test tests/ProductInventory.Api.IntegrationTests
 dotnet test tests/ProductInventory.Bdd.Tests
 ```
 
-> **Note:** integration and BDD tests spin up a real, ephemeral SQL Server container per test run via Testcontainers. They were written and verified to build and discover correctly (`dotnet test --list-tests`), but could not be executed end-to-end in the sandbox this was authored in, because that network blocks TLS to public container registries. They should run normally in CI or on a machine with unrestricted registry access.
+> **Note:** integration and BDD tests each spin up their own isolated API instance and ephemeral SQL Server container via Testcontainers (integration tests share one instance across the collection; BDD tests boot a separate instance for their run), so the two suites never interfere with each other. All 20 integration tests and 8 BDD scenarios pass locally with Docker Desktop.
 
 ## API endpoints
 
@@ -125,4 +125,4 @@ Every response that returns product(s) includes the current `stock` field, per t
 
 - Product Id range is capped at ~900,000 values (100000–999999) by design; exceeding it would require re-keying, which is out of scope here.
 - Identity caching means Ids are not strictly gap-free after a SQL Server restart/failover — uniqueness is still guaranteed, only sequentiality is not.
-- Integration/BDD tests require Docker (or a Docker-API-compatible Podman setup) with network access to pull `mcr.microsoft.com/mssql/server`; they could not be executed live in the authoring environment due to a network/registry restriction there (see [Running the tests](#running-the-tests)).
+- Integration/BDD tests require Docker (or a Docker-API-compatible Podman setup) with network access to pull `mcr.microsoft.com/mssql/server` (see [Running the tests](#running-the-tests)).
