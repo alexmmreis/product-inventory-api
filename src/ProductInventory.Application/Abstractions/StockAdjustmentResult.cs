@@ -5,4 +5,5 @@ public enum StockAdjustmentResult
     Success,
     ProductNotFound,
     InsufficientStock,
+    StockOverflow,
 }

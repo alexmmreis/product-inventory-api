@@ -180,6 +180,20 @@ public class ProductServiceTests
         await act.Should().ThrowAsync<ProductNotFoundException>();
     }
 
+    [Fact]
+    public async Task AddToStockAsync_WhenStockWouldOverflow_ThrowsStockOverflowException()
+    {
+        var product = CreateProduct(stock: int.MaxValue - 1);
+        _repository.TryIncrementStockAsync(product.Id, 10, Arg.Any<CancellationToken>())
+            .Returns(StockAdjustmentResult.StockOverflow);
+        _repository.GetByIdAsync(product.Id, Arg.Any<CancellationToken>()).Returns(product);
+
+        var act = () => _sut.AddToStockAsync(product.Id, 10, CancellationToken.None);
+
+        (await act.Should().ThrowAsync<StockOverflowException>())
+            .Which.RequestedQuantity.Should().Be(10);
+    }
+
     [Theory]
     [InlineData(0, 0, 1, 20)]
     [InlineData(-5, -5, 1, 20)]

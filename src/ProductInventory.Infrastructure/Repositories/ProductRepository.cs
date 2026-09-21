@@ -107,12 +107,23 @@ public class ProductRepository : IProductRepository
     public async Task<StockAdjustmentResult> TryIncrementStockAsync(int id, int quantity, CancellationToken cancellationToken)
     {
         var rowsAffected = await _context.Products
-            .Where(p => p.Id == id)
+            .Where(p => p.Id == id && p.Stock <= int.MaxValue - quantity)
             .ExecuteUpdateAsync(
                 s => s.SetProperty(p => p.Stock, p => p.Stock + quantity)
                       .SetProperty(p => p.UpdatedAtUtc, _ => DateTime.UtcNow),
                 cancellationToken);
 
-        return rowsAffected > 0 ? StockAdjustmentResult.Success : StockAdjustmentResult.ProductNotFound;
+        if (rowsAffected > 0)
+        {
+            return StockAdjustmentResult.Success;
+        }
+
+        var existing = await _context.Products.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id, cancellationToken);
+        if (existing is null)
+        {
+            return StockAdjustmentResult.ProductNotFound;
+        }
+
+        return existing.Stock <= int.MaxValue - quantity ? StockAdjustmentResult.Success : StockAdjustmentResult.StockOverflow;
     }
 }

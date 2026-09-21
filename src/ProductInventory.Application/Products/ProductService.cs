@@ -111,6 +111,14 @@ public class ProductService : IProductService
             throw new InsufficientStockException(id, current.Stock, quantity);
         }
 
+        if (result == StockAdjustmentResult.StockOverflow)
+        {
+            var current = await _repository.GetByIdAsync(id, cancellationToken)
+                ?? throw new ProductNotFoundException(id);
+
+            throw new StockOverflowException(id, current.Stock, quantity);
+        }
+
         var updated = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new ProductNotFoundException(id);
 
